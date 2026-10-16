@@ -1,0 +1,286 @@
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local remote = ReplicatedStorage:WaitForChild("UpdateOverhead")
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "Tim3craftFpeNameChange"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Name = "Main"
+frame.Size = UDim2.fromOffset(350, 390)
+frame.Position = UDim2.new(0.5, -175, 0.5, -195)
+frame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(155, 155, 155)
+stroke.Thickness = 2
+stroke.Parent = frame
+
+local function makeButton(text, size, pos, color)
+    local b = Instance.new("TextButton")
+    b.Size = size
+    b.Position = pos
+    b.BackgroundColor3 = color
+    b.TextColor3 = Color3.fromRGB(240, 240, 240)
+    b.Text = text
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 13
+    b.BorderSizePixel = 0
+    b.AutoButtonColor = true
+    b.Parent = frame
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    return b
+end
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -48, 0, 35)
+title.Position = UDim2.fromOffset(12, 5)
+title.BackgroundTransparency = 1
+title.Text = "Tim3craft | Fpe:Name Change"
+title.TextColor3 = Color3.fromRGB(220, 220, 220)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = frame
+
+local close = makeButton(
+    "X",
+    UDim2.fromOffset(30, 27),
+    UDim2.new(1, -37, 0, 7),
+    Color3.fromRGB(75, 75, 75)
+)
+
+local nameBox = Instance.new("TextBox")
+nameBox.Size = UDim2.new(1, -24, 0, 36)
+nameBox.Position = UDim2.fromOffset(12, 44)
+nameBox.BackgroundColor3 = Color3.fromRGB(38, 38, 38)
+nameBox.TextColor3 = Color3.fromRGB(240, 240, 240)
+nameBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+nameBox.PlaceholderText = "Enter overhead name..."
+nameBox.Text = "Tim3craft"
+nameBox.ClearTextOnFocus = false
+nameBox.Font = Enum.Font.Gotham
+nameBox.TextSize = 15
+nameBox.Parent = frame
+
+Instance.new("UICorner", nameBox).CornerRadius = UDim.new(0, 6)
+
+local preview = Instance.new("TextLabel")
+preview.Size = UDim2.new(1, -24, 0, 45)
+preview.Position = UDim2.fromOffset(12, 87)
+preview.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+preview.Text = nameBox.Text
+preview.TextColor3 = Color3.new(1, 0, 0)
+preview.Font = Enum.Font.Arial
+preview.TextSize = 22
+preview.TextTruncate = Enum.TextTruncate.AtEnd
+preview.Parent = frame
+
+Instance.new("UICorner", preview).CornerRadius = UDim.new(0, 6)
+
+local randomToggle = makeButton(
+    "Random Characters: OFF",
+    UDim2.new(1, -24, 0, 31),
+    UDim2.fromOffset(12, 140),
+    Color3.fromRGB(55, 55, 55)
+)
+
+local regenerate = makeButton(
+    "REGENERATE NAME",
+    UDim2.new(1, -24, 0, 31),
+    UDim2.fromOffset(12, 178),
+    Color3.fromRGB(70, 70, 70)
+)
+
+local start = makeButton(
+    "START RAINBOW",
+    UDim2.new(0.5, -18, 0, 35),
+    UDim2.fromOffset(12, 220),
+    Color3.fromRGB(85, 85, 85)
+)
+
+local stop = makeButton(
+    "STOP",
+    UDim2.new(0.5, -18, 0, 35),
+    UDim2.new(0.5, 6, 0, 220),
+    Color3.fromRGB(45, 45, 45)
+)
+
+local antiTagButton = makeButton(
+    "ANTI-TAG CHECK: OFF",
+    UDim2.new(1, -24, 0, 31),
+    UDim2.fromOffset(12, 264),
+    Color3.fromRGB(60, 60, 60)
+)
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1, -24, 0, 42)
+status.Position = UDim2.fromOffset(12, 307)
+status.BackgroundTransparency = 1
+status.Text = "Status: STOPPED"
+status.TextColor3 = Color3.fromRGB(190, 190, 190)
+status.Font = Enum.Font.Gotham
+status.TextSize = 12
+status.TextWrapped = true
+status.Parent = frame
+
+local running = false
+local randomMode = false
+local antiTagEnabled = false
+local hue = 0
+local currentRandomName = nameBox.Text
+local alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+local function generateRandomName()
+    local base = nameBox.Text
+
+    if base == "" then
+        base = "Tim3craft"
+    end
+
+    local extra = ""
+
+    for i = 1, math.random(1, 3) do
+        local n = math.random(1, #alphabet)
+        extra ..= alphabet:sub(n, n)
+    end
+
+    local position = math.random(1, #base + 1)
+
+    return base:sub(1, position - 1)
+        .. extra
+        .. base:sub(position)
+end
+
+local function getName()
+    if randomMode then
+        return currentRandomName
+    end
+
+    return nameBox.Text
+end
+
+local function updateOverhead(text, color)
+    remote:FireServer(
+        text,
+        "",
+        Enum.Font.Arial,
+        color,
+        color
+    )
+end
+
+randomToggle.MouseButton1Click:Connect(function()
+    randomMode = not randomMode
+
+    randomToggle.Text = randomMode
+        and "Random Characters: ON"
+        or "Random Characters: OFF"
+
+    randomToggle.BackgroundColor3 = randomMode
+        and Color3.fromRGB(100, 100, 100)
+        or Color3.fromRGB(55, 55, 55)
+
+    currentRandomName = generateRandomName()
+    preview.Text = getName()
+end)
+
+regenerate.MouseButton1Click:Connect(function()
+    currentRandomName = generateRandomName()
+    preview.Text = getName()
+end)
+
+nameBox:GetPropertyChangedSignal("Text"):Connect(function()
+    if not randomMode then
+        preview.Text = nameBox.Text
+    else
+        currentRandomName = generateRandomName()
+        preview.Text = currentRandomName
+    end
+end)
+
+antiTagButton.MouseButton1Click:Connect(function()
+    antiTagEnabled = not antiTagEnabled
+
+    antiTagButton.Text = antiTagEnabled
+        and "ANTI-TAG CHECK: ON"
+        or "ANTI-TAG CHECK: OFF"
+
+    antiTagButton.BackgroundColor3 = antiTagEnabled
+        and Color3.fromRGB(100, 100, 100)
+        or Color3.fromRGB(60, 60, 60)
+
+    if antiTagEnabled then
+        if #getName() > 20 then
+            status.Text = "Warning: Try a shorter name. Roblox filtering still applies."
+        else
+            status.Text = "Name length checked. Roblox filtering still applies."
+        end
+    else
+        status.Text = running and "Status: RAINBOW ON" or "Status: STOPPED"
+    end
+end)
+
+start.MouseButton1Click:Connect(function()
+    if running then
+        return
+    end
+
+    running = true
+    status.Text = "Status: SMOOTH RAINBOW ON"
+
+    task.spawn(function()
+        local sendElapsed = 0
+        local randomElapsed = 0
+
+        while running and gui.Parent do
+            local dt = RunService.RenderStepped:Wait()
+
+            sendElapsed += dt
+            randomElapsed += dt
+
+            -- Smooth rainbow; one complete hue cycle about every 0.67 seconds.
+            hue = (hue + dt * 1.5) % 1
+
+            if randomMode and randomElapsed >= 0.5 then
+                randomElapsed = 0
+                currentRandomName = generateRandomName()
+            end
+
+            local color = Color3.fromHSV(hue, 1, 1)
+            local name = getName()
+
+            preview.Text = name
+            preview.TextColor3 = color
+            stroke.Color = Color3.fromHSV((hue + 0.12) % 1, 1, 1)
+
+            -- Limit server updates to approximately 6–7 per second.
+            if sendElapsed >= 0.15 then
+                sendElapsed = 0
+                updateOverhead(name, color)
+            end
+        end
+    end)
+end)
+
+stop.MouseButton1Click:Connect(function()
+    running = false
+    status.Text = "Status: STOPPED"
+end)
+
+close.MouseButton1Click:Connect(function()
+    running = false
+    gui:Destroy()
+end)
